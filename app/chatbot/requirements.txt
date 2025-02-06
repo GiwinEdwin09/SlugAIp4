@@ -1,0 +1,4 @@
+openai
+pinecone
+python-dotenv
+flask

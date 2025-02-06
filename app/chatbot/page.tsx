@@ -9,14 +9,33 @@ export default function ChatbotPage() {
   const [messages, setMessages] = useState<{ role: "user" | "bot"; content: string }[]>([])
   const [input, setInput] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (input.trim()) {
       setMessages([...messages, { role: "user", content: input }])
       // Simulate bot response
-      setTimeout(() => {
-        setMessages((prev) => [...prev, { role: "bot", content: "Message accepted" }])
-      }, 500)
+      try {
+        const response = await fetch('http://127.0.0.1:5000/recommend', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            transcript: input,
+            next_quarter: "Winter" // You can make this dynamic based on user input
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+
+        const data = await response.json()
+        setMessages((prev) => [...prev, { role: "bot", content: data.recommendations }])
+      } catch (error) {
+        console.error('Error fetching recommendations:', error)
+        setMessages((prev) => [...prev, { role: "bot", content: "Sorry, I couldn't fetch recommendations at the moment." }])
+      }
       setInput("")
     }
   }
