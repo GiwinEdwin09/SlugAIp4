@@ -75,12 +75,28 @@ def parse_courses(cleaned_lines):
                 })
     return courses_by_quarter
 
+def extract_major(cleaned_lines):
+    major = None
+    matching_lines = []
+    for line in cleaned_lines:
+        if 'Plan:' in line:
+            matching_lines.append(line)
+    
+
+    major = matching_lines[-2].split('Plan:')[-1].strip()
+    return major
+
 def main(pdf_path):
     try:
         text = extract_text_from_pdf(pdf_path)
         cleaned_lines = clean_text(text)
         courses_by_quarter = parse_courses(cleaned_lines)
-        return json.dumps({"success": True, "data": courses_by_quarter}, indent=2)
+        data = {
+        'major': major,
+        'courses_by_quarter': courses_by_quarter
+    }
+        major = extract_major(cleaned_lines)
+        return json.dumps({"success": True, "data": data}, indent=2)
     except Exception as e:
         return json.dumps({"success": False, "error": str(e)})
 
